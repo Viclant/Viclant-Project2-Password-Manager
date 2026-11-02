@@ -1,7 +1,6 @@
 # Core and CLI review - 2 November 2026
 
 Requested scope: Wu Yanlan's core/CLI tasks through 2 November 2026.
-Execution: Codex, at the user's request, using the Viclant account.
 Base: `main` at `2f539581ab3d213a938feed46bd1ef8dd4452d98`.
 
 All work below was executed on **2 November 2026**. The 31 October and
