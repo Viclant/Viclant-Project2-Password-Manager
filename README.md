@@ -15,9 +15,9 @@ There is no server, cloud storage or network request.
 
 ### Command-line interface (required by the project)
 
-Python **3.11 or later** is required. On a fresh Windows checkout, run
-`Setup.cmd` first to create `.venv` and install the dependencies. Alternatively,
-follow the manual installation steps below. Open PowerShell in this folder and run:
+Python **3.11 or later** is required. On a fresh Windows checkout, open PowerShell
+in the project folder and run `.\Setup.cmd` to create `.venv` and install the
+dependencies. The manual installation steps below also work.
 
 ```powershell
 .\vault.cmd init
@@ -34,15 +34,19 @@ unpredictable passphrase; the length check does not make a predictable password
 safe. Password input is hidden. `add` also asks twice for the entry password.
 
 `get` deliberately displays the selected password, so use it on a private screen.
-`list` displays only sites and usernames. To generate a stored entry password:
+`list` prints one JSON object per entry with its site and username. Use
+`add --generate` to generate and store a password. The password is displayed only
+when you explicitly retrieve it with `get`. The standalone `gen` command prints
+a password without adding it to a vault.
 
 ```powershell
 .\vault.cmd add example --user alice --generate --length 24
 .\vault.cmd get example
 ```
 
-The default file is `vault.json` in the current directory. Put `--vault` **before**
-the command to select another file:
+The default file is `vault.json` in the current working directory. Put
+`--vault PATH` **before** the command and use the same path for subsequent
+operations on that vault.
 
 ```powershell
 .\vault.cmd --vault personal.vault.json init
@@ -53,6 +57,12 @@ Each CLI command is a short session. `unlock` checks and decrypts once, then exi
 it does not leave the next command unlocked. Read/write commands ask for the
 master password again. The vault is not overwritten if `init` is run twice.
 To replace an existing site, delete that entry and add it again.
+
+If `init` reports that the vault already exists, use `unlock` to check that
+vault or pick a new path with `--vault`. If the password or verifier is rejected,
+check the path and master passphrase before trying again. For a locked vault,
+close the process using it and follow the [stale lock instructions](FORMAT.md)
+if the lock remains.
 
 ### Install on another computer
 
@@ -180,8 +190,8 @@ input bounds and write failures. No real vault is changed.
 Code map: `vault.py` handles the CLI, `vault_core.py` handles encryption and
 storage, and `tests/test_vault.py` checks behavior. See `FORMAT.md` for the format.
 
-See [core and CLI review notes](docs/reviews/core-cli.md) for the checks actually
-executed on 2 November 2026 and their limits.
+See the [core and CLI review notes](docs/reviews/core-cli.md) for the checks
+executed on 2 and 6 November 2026 and their limits.
 
 ## References
 

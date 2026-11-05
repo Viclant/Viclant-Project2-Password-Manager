@@ -76,3 +76,39 @@ Python cannot guarantee physical zeroization of secrets.
 This branch contains the core and CLI. Public-key sharing, GUI integration and
 course-platform submission are later scopes. No real vault, credentials, private
 keys, environment directory or member-package control files are included.
+
+## Follow-up checks on 6 November 2026
+
+The dates in the first column are the scheduled review slots. All checks in this
+section ran on 6 November in the Europe/Paris time zone, using Windows,
+Python 3.13.13, argon2-cffi 25.1.0 and cryptography 50.0.2.
+
+| Planned slot | Result on 6 November |
+| --- | --- |
+| 3 November, sharing and CLI regression | The local sharing snapshot passed 45 unit tests and all 9 acceptance checks. CLI help listed all seven original commands and `keygen`, `share` and `open-share`. A 15-call smoke test exercised the original commands, a share round trip, wrong master and private-key passwords, and refusal to overwrite existing files. Sharing left the vault unchanged. |
+| 4 November, tampering and boundaries | All 27 tests on the branch snapshot passed. Coverage included altered ciphertext, tag, nonce, authenticated verifier and KDF salt, invalid encodings and rejection of excessive KDF parameters before cryptography. Separate checks accepted a 12-character master, a 1024-byte UTF-8 master, 1000 entries and exactly 1 MiB of serialized plaintext. One below the minimum or one above each maximum was rejected. Oversized saves preserved the original file bytes. |
+| 5 November, CLI instructions and errors | The documented default and named-vault flows passed with simulated prompts and real temporary vaults. Reinitialization, a wrong master and a missing entry returned exit code 1 without changing the vault. The Windows launcher passed `--help` and generated 24 characters with `gen --length 24`. It returned 1 for length 11 and 2 when `--vault` was placed after the command. README now explains setup, vault paths, output and error recovery. |
+| 6 November, GUI and CLI compatibility | The local combined snapshot passed 74 unit tests with no skips and all 9 acceptance checks. Using Tk 8.6 widgets in a hidden window, the GUI read and edited an entry created by the CLI. While the GUI held the lock, the CLI refused access and the file was unchanged. After the GUI released the lock, the CLI read the edited entry. The header was preserved and the nonce changed. Neither fixture password appeared in the stored file, and no lock file remained. |
+
+The branch snapshot was Git commit `f01077d405d636339cc4aa546e6150bb428528bc`.
+The sharing snapshot overlaid `vault.py`, `sharing.py`, `tests/test_sharing.py`
+and `tools/verify_submission.py` from Liu Yunfei's package. The combined snapshot
+also overlaid `vault_gui.py`, `gui_session.py`, `tests/test_gui.py` and
+`tests/test_gui_session.py` from Chen Ziming's package. These files were checked
+against their package manifests. The source ZIP was
+`Project2-Full-and-Three-Members-2026-10-31.zip` with SHA-256
+`5d71f78bfb3e904a39e4a4767b5ea40a1fbfe51242f84a359f5900b2b2c31354`.
+
+To rerun the suites from the corresponding snapshot, use its project Python.
+
+```text
+python -m unittest discover -s tests -v
+python vault.py --help
+python tools/verify_submission.py
+```
+
+The acceptance script is present in the sharing and combined snapshots. The
+additional CLI smoke tests supplied invented passwords through simulated prompts.
+The GUI smoke test exercised the widget handlers with disposable files.
+The sharing and GUI results cover the local combinations. Both modules were
+still pending integration in the remote repository when reviewed.
