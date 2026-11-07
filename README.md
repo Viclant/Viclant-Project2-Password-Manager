@@ -191,7 +191,7 @@ Code map: `vault.py` handles the CLI, `vault_core.py` handles encryption and
 storage, and `tests/test_vault.py` checks behavior. See `FORMAT.md` for the format.
 
 See the [core and CLI review notes](docs/reviews/core-cli.md) for the checks
-executed on 2 and 6 November 2026 and their limits.
+executed on 2, 6 and 7 November 2026 and their limits.
 
 ## References
 

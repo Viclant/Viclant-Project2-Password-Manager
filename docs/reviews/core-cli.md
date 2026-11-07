@@ -112,3 +112,53 @@ additional CLI smoke tests supplied invented passwords through simulated prompts
 The GUI smoke test exercised the widget handlers with disposable files.
 The sharing and GUI results cover the local combinations. Both modules were
 still pending integration in the remote repository when reviewed.
+
+## Clean environment and CLI checks on 7 November 2026
+
+The tested revision was `db02ad312a1c916827c8a20c53955dde35f027af`.
+A new checkout on the Windows computer started without a `.venv` directory.
+`.\Setup.cmd` created a new virtual environment with
+`include-system-site-packages = false`. Both cryptography and argon2 imported
+from that environment's own site-packages directory.
+
+Python was 3.13.13 and pip was 26.0.1. Installed packages were as follows.
+
+| Package | Version |
+| --- | --- |
+| argon2-cffi | 25.1.0 |
+| argon2-cffi-bindings | 26.1.0 |
+| cryptography | 50.0.2 |
+| cffi | 2.1.1 |
+| pycparser | 3.12 |
+
+The setup, dependency checks and test commands ran from the new checkout.
+
+```powershell
+.\Setup.cmd
+.\.venv\Scripts\python.exe --version
+.\.venv\Scripts\python.exe -m pip --version
+.\.venv\Scripts\python.exe -m pip freeze
+.\.venv\Scripts\python.exe -m pip check
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\vault.cmd --help
+```
+
+Setup returned exit code 0 and pip reported `No broken requirements found.`
+The complete suite passed with zero skips.
+
+```text
+Ran 27 tests in 6.677s
+OK
+```
+
+A separate interactive terminal workflow used `.\vault.cmd` and a disposable
+vault outside the checkout. It created the vault, added `demo.example` with a
+generated 24-character password, listed and retrieved the entry, unlocked the
+vault, deleted the entry and confirmed the empty list. Standalone
+`gen --length 24` also returned 24 characters. Every command returned exit
+code 0 and the workflow left no lock file.
+
+The master passphrase was entered through the actual hidden prompts for these
+launcher checks. The separate unit tests covered wrong passwords, confirmation
+mismatch, invalid lengths and simulated save failures. The workflow used only
+invented credentials and a temporary encrypted vault.
