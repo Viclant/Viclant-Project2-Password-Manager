@@ -162,3 +162,45 @@ The master passphrase was entered through the actual hidden prompts for these
 launcher checks. The separate unit tests covered wrong passwords, confirmation
 mismatch, invalid lengths and simulated save failures. The workflow used only
 invented credentials and a temporary encrypted vault.
+
+## Required-feature checklist on 8 November 2026
+
+The review started from `b9502ffd6e8f87229d673a7af8d4e1c97250e8d7`.
+Each required block was checked against its implementation, tests and the
+corresponding explanation in README.
+
+| Required block | Implementation in `vault_core.py` | Test evidence in `tests/test_vault.py` |
+| --- | --- | --- |
+| Master-password verification | `initialize` stores a salted Argon2id verifier using `PH.hash`. `open_vault` verifies it with `PH.verify`. | `test_wrong_master_rejected_without_changing_file`, `test_verifier_and_ciphertext_present_but_no_plaintext_or_key_file` and the CLI wrong-master test passed. |
+| Derive the vault key from the master password | `derive_key` uses Argon2id to produce 32 bytes. Initialization generates a separate 16-byte KDF salt, and reopening derives the key again. | The independent-salt and reopening checks passed. The new `test_key_derivation_is_deterministic_and_bound_to_password_and_salt` passed using real Argon2id calls. |
+| Encrypt and authenticate stored entries | `Vault.save` uses AES-256-GCM with a fresh 12-byte nonce and the canonical header as AAD. `open_vault` authenticates before returning entries. | Ciphertext, tag, nonce and KDF-salt tampering tests passed, together with authenticated-verifier, single-file-byte, fresh-nonce and persistence checks. |
+| Generate strong passwords | `generate_password` uses `secrets.choice`, accepts lengths 12 through 128 and requires all four character classes. | Length-boundary, invalid-length, generated-entry persistence and standalone CLI generation tests passed. |
+
+The review found a missing direct regression check for key derivation. The new
+test confirms that the same password and salt produce the same 32-byte key,
+while changing either input changes the result. It also checks the output type
+and length for all four derivations.
+
+The tracked delivery files include `vault_core.py`, `vault.py`,
+`tests/test_vault.py`, `requirements.txt`, `Setup.cmd`, `vault.cmd`,
+`README.md` and `FORMAT.md`. README explains the four choices, and FORMAT
+describes the public header, encrypted entries, size limits and file handling.
+All four required implementations were present in the reviewed revision.
+
+Validation used Windows and Python 3.13.13 with argon2-cffi 25.1.0 and
+cryptography 50.0.2. The existing isolated environment installed on 7 November
+was reused. Imports were checked to point to the new 8 November checkout.
+From that checkout the commands were as follows.
+
+```powershell
+& '..\wu-yanlan-nov07\.venv\Scripts\python.exe' -m unittest discover -s tests -v
+& '..\wu-yanlan-nov07\.venv\Scripts\python.exe' vault.py --help
+```
+
+CLI help succeeded. After adding the key-derivation test, the complete suite
+returned exit code 0 with zero skips.
+
+```text
+Ran 28 tests in 7.108s
+OK
+```

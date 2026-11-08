@@ -78,6 +78,21 @@ class VaultSecurityTests(unittest.TestCase):
         self.assertEqual(self.path.read_bytes(), original)
         self.assert_clean_directory()
 
+    def test_key_derivation_is_deterministic_and_bound_to_password_and_salt(self):
+        salt = bytes.fromhex("000102030405060708090a0b0c0d0e0f")
+        changed_salt = bytes.fromhex("000102030405060708090a0b0c0d0e0e")
+        key = core.derive_key(MASTER, salt)
+        repeated_key = core.derive_key(MASTER, salt)
+        changed_password_key = core.derive_key(WRONG, salt)
+        changed_salt_key = core.derive_key(MASTER, changed_salt)
+
+        for derived_key in (key, repeated_key, changed_password_key, changed_salt_key):
+            self.assertIsInstance(derived_key, bytes)
+            self.assertEqual(len(derived_key), 32)
+        self.assertEqual(key, repeated_key)
+        self.assertNotEqual(key, changed_password_key)
+        self.assertNotEqual(key, changed_salt_key)
+
     def test_verifier_and_ciphertext_present_but_no_plaintext_or_key_file(self):
         self.add_fixture()
         raw = self.path.read_bytes()
