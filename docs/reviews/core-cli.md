@@ -204,3 +204,66 @@ returned exit code 0 with zero skips.
 Ran 28 tests in 7.108s
 OK
 ```
+
+## Final core and CLI review on 9 November 2026
+
+The tested `wu-yanlan` revision was
+`7c0df7865eadaac15cd3ab8241cbd034323d995f`. The review used a new checkout on
+Windows with the isolated Python 3.13.13 environment installed on 7 November.
+`pip freeze` reported `argon2-cffi==25.1.0`, `argon2-cffi-bindings==26.1.0`,
+`cryptography==50.0.2`, `cffi==2.1.1` and `pycparser==3.12`.
+
+The following commands ran from the new checkout.
+
+```powershell
+$python = '..\wu-yanlan-nov07\.venv\Scripts\python.exe'
+& $python --version
+& $python -m pip freeze
+& $python -m pip check
+& $python -m unittest discover -s tests -v
+& $python vault.py --help
+& $python vault.py gen --length 24
+git ls-files
+```
+
+`pip check` reported no broken requirements. CLI help listed the seven core
+commands, and standalone generation returned 24 characters. The complete
+core suite finished with exit code 0 and no skips.
+
+```text
+Ran 28 tests in 6.116s
+OK
+```
+
+The tests exercised master-password rejection, key derivation, tamper
+detection, encrypted persistence across reopening, save-failure recovery and
+the CLI lifecycle from creation to deletion. The CLI tests supply invented
+passwords through simulated prompts. The interactive hidden-input check for
+the Windows launcher is recorded in the 7 November section.
+
+The delivery contains the core and CLI sources, Windows launchers, pinned
+requirements, tests, README and file format notes. The tracked-file check
+found no vault files, keys, lock files, caches or virtual environment. The
+file format and security limits in README and FORMAT still apply, including
+loss of access if the master password is lost and the limits of protecting
+secrets in process memory or terminal output.
+
+### Integration handoff
+
+The published `2023905333` branch at
+`bc9db56b2f08f94d5f0ccda4e97d5cc141e63bf0` adds the desktop interface,
+launcher and GUI tests to the same core revision. A separate checkout of
+that commit passed all 57 tests with zero skips in 11.022 seconds using
+`python -B -m unittest discover -s tests -v`.
+
+The CLI-to-GUI round trip also passed on that checkout. The CLI created
+an encrypted vault, Tk 8.6 widgets opened and edited it in a hidden window,
+and the CLI read the updated entry after the GUI released its lock. The CLI
+refused access while the GUI held the lock. Saving preserved the header and
+changed the nonce. This check used simulated CLI prompts and disposable data.
+
+At review time `main` was at `2f539581ab3d213a938feed46bd1ef8dd4452d98`
+and the repository had no pull requests. The inspected remote branches did
+not contain the public-key sharing module, its tests or the acceptance script.
+The final team handoff still needs a combined revision and a fresh run of
+its full tests and acceptance checks.
