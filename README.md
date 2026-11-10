@@ -6,9 +6,9 @@ Course: EPITA Computer Security
 
 Due: **12 November 2026, end of day**
 
-This is a small Python command-line password manager. It has the four required
-building blocks: master verification, key derivation, authenticated encryption
-and strong password generation.
+This is a small local Python password manager with a command-line interface and
+an optional desktop interface. It supports master password verification, key
+derivation, authenticated encryption and strong password generation.
 There is no server, cloud storage or network request.
 
 ## Run it
@@ -63,6 +63,28 @@ vault or pick a new path with `--vault`. If the password or verifier is rejected
 check the path and master passphrase before trying again. For a locked vault,
 close the process using it and follow the [stale lock instructions](FORMAT.md)
 if the lock remains.
+
+### Desktop interface on Windows
+
+Use Python 3.11 or later with Tcl/Tk. In PowerShell, run these commands from the
+project folder.
+
+```powershell
+.\Setup.cmd
+.\GUI.cmd
+```
+
+Choose **Create vault** for a new file or **Unlock vault** for an existing one.
+The launcher defaults to `vault.json` in the project folder. Use the file picker
+to select a different vault, or pass its path directly to the desktop script.
+
+```powershell
+.\.venv\Scripts\python.exe .\vault_gui.py --vault .\personal.vault.json
+```
+
+The desktop interface and CLI share the same encrypted file format. Click
+**Lock vault** or close the desktop window before opening the same vault with
+the CLI. The desktop interface locks after two minutes of inactivity.
 
 ### Install on another computer
 
@@ -162,12 +184,16 @@ It does **not** protect against:
 
 - A keylogger, malware or an administrator reading the running process.
 - A weak or reused master password.
-- Someone reading the screen, terminal output/history or screenshots after `get`.
+- Someone reading the screen, terminal output or history after `get`, or seeing
+  a password revealed in the desktop interface.
+- Clipboard history. The desktop interface tries to clear an unchanged copied
+  password after 30 seconds. Operating system clipboard history can retain it.
 - Deleting the vault, restoring an older authentic copy, or changing the whole
   file into a different valid vault. GCM detects modifications to a protected
   record; it does not prove freshness or guarantee availability.
 - Secrets left in Python-managed memory, swap or crash dumps. Python cannot
-  guarantee physical zeroization. CLI sessions end after each command.
+  guarantee physical zeroization. CLI sessions end after each command. The
+  desktop interface keeps the decrypted session in memory while unlocked.
 - Users sharing an operating-system account. POSIX new files use mode `0600`;
   Windows files inherit the directory ACL. This app does not create Windows ACLs.
   Store the vault in your private user directory on an encrypted disk.
@@ -185,13 +211,15 @@ Network access is not needed after installing dependencies.
 
 The tests use disposable vaults and invented passwords. They check the four
 required building blocks, CLI behavior, persistence, wrong passwords, tampering,
-input bounds and write failures. No real vault is changed.
+input bounds, write failures and desktop behavior. The desktop widget tests
+need Tcl/Tk and a graphical session.
 
-Code map: `vault.py` handles the CLI, `vault_core.py` handles encryption and
-storage, and `tests/test_vault.py` checks behavior. See `FORMAT.md` for the format.
+`vault.py` handles the CLI and `vault_core.py` handles encryption and storage.
+`vault_gui.py` handles the desktop interface and `gui_session.py` manages its
+vault session. See `FORMAT.md` for the file format.
 
-See the [core and CLI review notes](docs/reviews/core-cli.md) for the checks
-executed on 2, 6, 7, 8 and 9 November 2026 and their limits.
+See the [core and CLI review notes](docs/reviews/core-cli.md) for dated checks
+and their limits.
 
 ## References
 
