@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "base_commit": "22d3c79e1ba38404e42dfda58ab9a6681221647a",
+  "branch": "liuyunfei",
+  "recorded_at_utc": "2026-11-10T16:46:53.067210+00:00",
+  "actual_work_date": "2026-11-10",
+  "actual_work_timezone": "Europe/Paris",
+  "reference_package": "Project2-Full-and-Three-Members-2026-10-31/Project2-02-Liu-Yunfei/payload",
+  "hash_convention": "SHA256 of UTF-8/LF file bytes (Git blob content).",
+  "integration": "Reconciled against the current main; existing core/GUI and their review history retained.",
+  "files": [
+    {
+      "path": "README.md",
+      "integrated_sha256": "3ab2b8b759d9ebe4dc21655b8c745cf1f3914d0c7a540b37974a7150829e6096",
+      "reference_sha256": "b81cb1098854f2737b9f8cf9adc936638bf2bf6726203081fac6a289f2267b68",
+      "matches_reference": false
+    },
+    {
+      "path": "vault.py",
+      "integrated_sha256": "0094efdf26b900fdc9377c7d39fc6f925667baff4a2010bac69e4e9bf05e4b1a",
+      "reference_sha256": "0094efdf26b900fdc9377c7d39fc6f925667baff4a2010bac69e4e9bf05e4b1a",
+      "matches_reference": true
+    },
+    {
+      "path": "sharing.py",
+      "integrated_sha256": "3bdd342c0eb416a084014f17e6c8f44081a34778d4ff89b0bd59455ee1516d9b",
+      "reference_sha256": "3bdd342c0eb416a084014f17e6c8f44081a34778d4ff89b0bd59455ee1516d9b",
+      "matches_reference": true
+    },
+    {
+      "path": "tests/test_sharing.py",
+      "integrated_sha256": "31c4ca8063ee12594b7022461f244bf180d8faf478e8b3c800ae8b78008930fb",
+      "reference_sha256": "31c4ca8063ee12594b7022461f244bf180d8faf478e8b3c800ae8b78008930fb",
+      "matches_reference": true
+    },
+    {
+      "path": "tests/test_sharing_cli.py",
+      "integrated_sha256": "b6c4e98ac9c942a86bf186eb0e81fa5a50d6f4595dd2570c708b66abdf1384a6",
+      "provenance": "Added during the current integration for CLI behavior coverage."
+    },
+    {
+      "path": "tools/verify_submission.py",
+      "integrated_sha256": "486248c26276575dfabc8c05aa5487d63dbde04526e0e815803200c90f7ed019",
+      "reference_sha256": "486248c26276575dfabc8c05aa5487d63dbde04526e0e815803200c90f7ed019",
+      "matches_reference": true
+    }
+  ],
+  "validation": {
+    "unit_tests": 82,
+    "skipped": 0,
+    "acceptance_checks": 9,
+    "real_pty_cli_smoke": true
+  }
+}

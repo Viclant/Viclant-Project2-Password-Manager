@@ -1,0 +1,12 @@
+Sharing CLI subprocess smoke
+UTC: 2026-11-10T16:44:12.397610+00:00
+Real child processes and PTYs; getpass is not mocked.
+Only invented credentials and a disposable directory; no passwords logged.
+PASS: init/add/list with real hidden master prompts
+PASS: keygen/share/open-share; only the selected entry; source vault unchanged
+PASS: wrong sharing-key passphrase returns exit code 1
+PASS: tampered share returns exit code 1 without plaintext
+PASS: README macOS public-file hash command matches SHA-256 of PEM bytes
+PASS: original delete/unlock/gen commands remain operational
+PASS: terminal ECHO disabled for every secret prompt; entered secrets not echoed
+PASS: no leaked vault locks; all test files removed on completion

@@ -1,0 +1,10 @@
+UTC: 2026-11-10T16:44:36.822757+00:00
+Platform: macOS-26.6.2-arm64-arm-64bit-Mach-O
+Python: 3.14.3
+argon2-cffi==25.1.0
+argon2-cffi-bindings==26.1.0
+cryptography==50.0.2
+cffi==2.1.1
+pycparser==3.12
+Tk version: 8.6
+pip check: No broken requirements found.

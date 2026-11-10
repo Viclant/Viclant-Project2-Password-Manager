@@ -9,6 +9,7 @@ Due: **12 November 2026, end of day**
 This is a small local Python password manager with a command-line interface and
 an optional desktop interface. It supports master password verification, key
 derivation, authenticated encryption and strong password generation.
+Bonus A shares one entry using a recipient's public key through the CLI.
 There is no server, cloud storage or network request.
 
 ## Run it
@@ -202,24 +203,89 @@ The vault file still reveals its size, format, cryptographic settings and hash.
 There is no password recovery, automatic cloud backup or breach-check API.
 Network access is not needed after installing dependencies.
 
+## Bonus A: share one entry using asymmetric encryption
+
+The receiver creates RSA-3072 sharing keys. The private key is an encrypted
+PKCS8 PEM protected by a separate passphrase; choose one different from the
+vault's master passphrase. The program checks its length, but does not enforce
+that the two passphrases differ. These optional RSA files are sharing keys,
+not the vault's derived AES key. Keep the private file private.
+
+```powershell
+# Receiver: create sharing keys and choose a separate long passphrase.
+.\vault.cmd keygen --private teammate-private.pem --public teammate-public.pem
+# Compare this exact public-file hash with the receiver over a trusted channel.
+Get-FileHash .\teammate-public.pem -Algorithm SHA256
+
+# Sender: add a disposable demo entry, then share only that entry.
+.\vault.cmd add sharing-demo --user alice --generate --length 24
+.\vault.cmd share sharing-demo --recipient teammate-public.pem --out demo.share.json
+
+# Receiver: use the private-key passphrase to decrypt and DISPLAY the password.
+.\vault.cmd open-share demo.share.json --private teammate-private.pem
+```
+
+On Linux/macOS, replace `.\vault.cmd` with `.venv/bin/python vault.py` and use
+`shasum -a 256 teammate-public.pem` for the public-file hash. The sender receives
+only the public key; send the resulting `demo.share.json` to the receiver.
+Neither `keygen` nor `open-share` needs a vault or its master passphrase. The
+`share` command asks for the vault's master passphrase and does not modify it.
+Lock the GUI before sharing an entry from the same vault.
+
+Each share gets a fresh random 32-byte AES key and 12-byte nonce. AES-256-GCM
+encrypts exactly one site/username/password object; RSA-OAEP with SHA-256 wraps
+that temporary key for the recipient. RSA does not encrypt the whole entry,
+because OAEP only accepts a limited message size. GCM authenticates the format,
+version, algorithm suite and recipient fingerprint as associated data.
+
+Verify the recipient public key independently before sharing. The package's
+`recipient_sha256` hashes DER SubjectPublicKeyInfo, whereas the commands above
+hash the complete PEM file: these are different values and cannot be compared
+directly. The embedded fingerprint binds the package to a key; it does not
+prove that the key belongs to your teammate. This feature does not authenticate
+the sender. The receiver can read and copy the decrypted password.
+
+Wrong keys, wrong private-key passphrases and damaged packages are rejected.
+Sharing outputs never overwrite existing files and require a filesystem with
+hard-link support. The two key files are published individually: an I/O failure
+can leave one complete key file. POSIX output files use mode `0600`; on Windows,
+the directory's ACLs apply. Do not commit real vaults, private keys or share files.
+
 ## Check the implementation
 
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe tools\verify_submission.py
 .\.venv\Scripts\python.exe vault.py --help
+```
+
+Linux/macOS:
+
+```sh
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python tools/verify_submission.py
+.venv/bin/python vault.py --help
 ```
 
 The tests use disposable vaults and invented passwords. They check the four
 required building blocks, CLI behavior, persistence, wrong passwords, tampering,
-input bounds, write failures and desktop behavior. The desktop widget tests
-need Tcl/Tk and a graphical session.
+input bounds, write failures, sharing and desktop behavior. The sharing checks
+include private-key encryption, wrong keys/passphrases, modified packages,
+output overwrite protection and the CLI workflow. The acceptance tool checks
+the required blocks and bonus sharing with real cryptographic calls. The desktop
+widget tests need Tcl/Tk and a graphical session; unavailable widget checks are
+reported as skips, not successful GUI verification.
 
 `vault.py` handles the CLI and `vault_core.py` handles encryption and storage.
 `vault_gui.py` handles the desktop interface and `gui_session.py` manages its
 vault session. See `FORMAT.md` for the file format.
+`sharing.py` implements the optional single-entry envelope and `tools/verify_submission.py`
+runs the acceptance checks.
 
 See the [core and CLI review notes](docs/reviews/core-cli.md) for dated checks
 and their limits.
+See the [sharing security review](docs/reviews/sharing-security.md) for the task
+checklist, actual integration checks and their limits.
 
 ## References
 
@@ -227,4 +293,5 @@ and their limits.
 - [argon2-cffi password hashing and verification](https://argon2-cffi.readthedocs.io/en/stable/howto.html)
 - [cryptography Argon2id KDF](https://cryptography.io/en/latest/hazmat/primitives/key-derivation-functions/#argon2id)
 - [cryptography AES-GCM](https://cryptography.io/en/latest/hazmat/primitives/aead/#cryptography.hazmat.primitives.ciphers.aead.AESGCM)
+- [cryptography RSA and OAEP](https://cryptography.io/en/latest/hazmat/primitives/asymmetric/rsa/)
 - [Python secrets](https://docs.python.org/3/library/secrets.html)
