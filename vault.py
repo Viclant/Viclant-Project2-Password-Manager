@@ -8,6 +8,7 @@ import sys
 import warnings
 
 from vault_core import VaultError, generate_password, initialize, open_vault
+from sharing import SharingError, decrypt_entry, encrypt_entry, generate_keypair
 
 
 def ask_secret(prompt):
@@ -43,6 +44,16 @@ def parser():
         command.add_argument("site")
     gen = sub.add_parser("gen", help="Print a generated password without opening the vault.")
     gen.add_argument("--length", type=int, default=20)
+    keygen = sub.add_parser("keygen", help="Bonus: generate a recipient's separate RSA sharing keys.")
+    keygen.add_argument("--private", type=Path, required=True)
+    keygen.add_argument("--public", type=Path, required=True)
+    share = sub.add_parser("share", help="Bonus: encrypt one entry to a teammate's public key.")
+    share.add_argument("site")
+    share.add_argument("--recipient", type=Path, required=True)
+    share.add_argument("--out", type=Path, required=True)
+    receive = sub.add_parser("open-share", help="Bonus: decrypt and print a shared entry.")
+    receive.add_argument("package", type=Path)
+    receive.add_argument("--private", type=Path, required=True)
     return root
 
 
@@ -52,7 +63,16 @@ def main(argv=None):
         if args.command == "gen":
             print(generate_password(args.length))
             return 0
-        if args.command == "init":
+        if args.command == "keygen":
+            passphrase = new_secret("New sharing-key passphrase (at least 12 characters): ")
+            if len(passphrase) < 12:
+                raise VaultError("Sharing-key passphrase must have at least 12 characters.")
+            generate_keypair(args.private, args.public, passphrase.encode("utf-8"))
+            print("Created sharing keys. Give only the public key to your teammate.")
+        elif args.command == "open-share":
+            secret = ask_secret("Sharing-key passphrase: ").encode("utf-8")
+            print(json.dumps(decrypt_entry(args.package, args.private, secret), indent=2, ensure_ascii=True))
+        elif args.command == "init":
             initialize(args.vault, new_secret("New master passphrase (at least 12 characters): "))
             print("Vault created. Keep your master passphrase safe; there is no recovery key.")
         else:
@@ -76,8 +96,11 @@ def main(argv=None):
                     vault.delete(args.site)
                     vault.save()
                     print("Entry deleted.")
+                elif args.command == "share":
+                    encrypt_entry(vault.get(args.site), args.recipient, args.out)
+                    print("Encrypted one entry. Verify the recipient public key through a trusted channel.")
         return 0
-    except (VaultError, OSError, ValueError) as error:
+    except (VaultError, SharingError, OSError, ValueError) as error:
         print(f"Error: {error}", file=sys.stderr)
         return 1
 

@@ -1,0 +1,14 @@
+Project 2 acceptance run
+UTC: 2026-11-10T16:42:37.088760+00:00
+Python: 3.14.3
+Only disposable directories and invented credentials are used.
+PASS: master verifier is an Argon2id string
+PASS: wrong master password rejected without changing the file
+PASS: add/list/get persist after a separate unlock
+PASS: no plaintext entries/master, stored AES key, or key file
+PASS: exactly one changed vault-file byte fails AES-GCM authentication loudly
+PASS: delete persists after reopening
+PASS: secrets generator produces the requested length
+PASS: bonus: one entry shared with RSA-OAEP + AES-GCM; private PEM is encrypted
+PASS: bonus: changed shared ciphertext is rejected
+Result: 9/9 acceptance checks passed.
