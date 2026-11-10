@@ -267,3 +267,35 @@ and the repository had no pull requests. The inspected remote branches did
 not contain the public-key sharing module, its tests or the acceptance script.
 The final team handoff still needs a combined revision and a fresh run of
 its full tests and acceptance checks.
+
+## Submission readiness on 10 November 2026
+
+The schedule reserves 10–12 November for feedback, environment issues and
+submission. This follow-up checked the published core and rehearsed the GUI
+integration.
+
+GitHub's default branch `main` and `wu-yanlan` both pointed to
+`fa849eaa4b488eed26ff3ad9d0135192897f9930` at the start of the check.
+On that core revision, Python 3.13.13 passed `pip check`, CLI help listed the
+seven core commands, and `vault.py gen --length 24` returned 24 characters.
+Representative vault, key, lock, share output, cache and virtual environment
+paths matched the repository ignore rules.
+
+The GUI commit on `2023905333` was
+`bc9db56b2f08f94d5f0ccda4e97d5cc141e63bf0`. A temporary checkout of `main`
+staged that commit without conflicts using
+`git merge --no-commit --no-ff bc9db56b2f08f94d5f0ccda4e97d5cc141e63bf0`.
+The staged tree was `72a18a724d3a71104934c199e47daac1ec927ce0`. It added the
+five GUI files and retained the 9 November review from `main`.
+
+`python -B -m unittest discover -s tests -v` on that tree completed with exit
+code 0, 57 passing tests and zero skips in 11.189 seconds. The same tree also
+passed the CLI-to-GUI round trip. Hidden Tk 8.6 widgets opened and edited an
+encrypted vault created by the CLI. The CLI refused access while the GUI
+held its lock and read back the changed entry after the lock was released.
+The test used disposable data and simulated password prompts.
+
+This was a local integration rehearsal. On GitHub, the GUI was still on
+`2023905333`, with no pull request, and the public-key sharing submission
+was pending. The final combined revision still needs the team's acceptance
+checks after integration.
